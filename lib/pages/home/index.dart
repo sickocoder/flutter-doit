@@ -74,6 +74,8 @@ class _HomePageState extends State<HomePage> {
         ) {
           if (!snapshot.hasData) return Container();
 
+          var today = DateTime.now();
+
           return SafeArea(
             child: Column(
               children: [
@@ -95,6 +97,12 @@ class _HomePageState extends State<HomePage> {
                       TaskList(
                         tasksWithFullData: snapshot.data as List<Task>,
                         tasks: (snapshot.data as List<Task>)
+                            .where((e) {
+                              var elDateTime =
+                                  DateTime.parse(e.time.toString());
+                              return elDateTime.month == today.month &&
+                                  elDateTime.day == today.day;
+                            })
                             .map((e) => e.formated())
                             .toList(),
                         filterBy: this.tabs[selectedTabIndex],

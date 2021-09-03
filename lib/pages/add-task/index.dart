@@ -233,6 +233,15 @@ class _AddTaskState extends State<AddTask> {
                       ],
                     ),
                   ),
+                  Opacity(
+                    opacity: 0.4,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 32),
+                      child: ScalableText(
+                          'Att: Todas as tarefas serão criadas para hoje e consequentemente desaparecerão no dia imediatamente a seguir.'),
+                    ),
+                  ),
                 ],
               ),
             ),

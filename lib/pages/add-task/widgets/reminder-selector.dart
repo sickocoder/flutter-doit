@@ -22,7 +22,6 @@ class ReminderSelector extends StatelessWidget {
 
         return InkWell(
           onTap: () {
-            print(index);
             onItemClicked(index);
           },
           child: Container(

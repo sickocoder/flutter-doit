@@ -1,3 +1,4 @@
+import 'package:doit/models/task.dart';
 import 'package:doit/pages/home/widgets/task-list-item.dart';
 import 'package:doit/shared/widgets/text.dart';
 import 'package:flutter/material.dart';
@@ -9,13 +10,17 @@ import '../home.types.dart';
 class TaskList extends StatefulWidget {
   final String filterBy;
   final List<TaskListItem> tasks;
+  final List<Task> tasksWithFullData;
   final Function(TaskListItem task) onTaskItemChange;
+  final Function shouldUpdateUI;
 
   TaskList({
     Key? key,
     required this.tasks,
     required this.onTaskItemChange,
     required this.filterBy,
+    required this.tasksWithFullData,
+    required this.shouldUpdateUI,
   }) : super(key: key);
 
   @override
@@ -86,10 +91,17 @@ class _TaskListState extends State<TaskList> {
           ),
           child: TaskListItemWidget(
             element: element,
+            taskData: this
+                .widget
+                .tasksWithFullData
+                .firstWhere((el) => el.id == element.id),
             onSelect: (isSelected) {
               TaskListItem selectedTask = element;
               selectedTask.isChecked = isSelected;
               this.widget.onTaskItemChange(selectedTask);
+            },
+            updateTheUI: () {
+              this.widget.shouldUpdateUI();
             },
           ),
         );

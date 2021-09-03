@@ -40,4 +40,16 @@ class Task {
       type: this.type,
     );
   }
+
+  factory Task.fromJson(Map<String, dynamic> json) {
+    return Task(
+      id: json['id'],
+      reminderBefore: json['reminderBefore'],
+      time: DateTime.parse(json['time']),
+      timeString: json['timeString'],
+      title: json['title'],
+      type: json['type'],
+      done: json['done'] == 1,
+    );
+  }
 }

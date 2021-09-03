@@ -71,6 +71,7 @@ class _SplashPageState extends State<SplashPage> {
       return;
     } catch (error) {
       print(error);
+      // TODO: make error page!
     }
   }
 

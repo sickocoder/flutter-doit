@@ -52,7 +52,7 @@ class DoItDatabase {
     });
   }
 
-  Future<void> updateDog(Task task) async {
+  Future<void> updateTask(Task task) async {
     final db = database;
     if (db == null) return;
 

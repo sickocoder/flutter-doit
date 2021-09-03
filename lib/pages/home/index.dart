@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> updateTask(Task task) async {
     var database = await DoItDatabase().openDoItDatabase();
-    await database.updateDog(task);
+    await database.updateTask(task);
 
     updateUI();
   }
@@ -58,14 +58,11 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    print('it was called');
     tasks = getTasks();
   }
 
   @override
   Widget build(BuildContext context) {
-    print('it was called');
-
     final quote = ModalRoute.of(context)!.settings.arguments as Quote;
     return Scaffold(
       backgroundColor: Colors.black,
@@ -96,6 +93,7 @@ class _HomePageState extends State<HomePage> {
                         child: QuoteOfDay(quote: quote),
                       ),
                       TaskList(
+                        tasksWithFullData: snapshot.data as List<Task>,
                         tasks: (snapshot.data as List<Task>)
                             .map((e) => e.formated())
                             .toList(),
@@ -107,6 +105,9 @@ class _HomePageState extends State<HomePage> {
                           element.done = task.isChecked;
 
                           updateTask(element);
+                        },
+                        shouldUpdateUI: () {
+                          updateUI();
                         },
                       ),
                     ],

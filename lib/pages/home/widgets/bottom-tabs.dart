@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 class BottomTabs extends StatefulWidget {
   final List<String> tabsData;
   final Function(int itemIndex)? onSelected;
+  final int defaultSelected;
 
   BottomTabs({
     Key? key,
     required this.tabsData,
     this.onSelected,
+    this.defaultSelected = 0,
   }) : super(key: key);
 
   @override
@@ -18,7 +20,14 @@ class BottomTabs extends StatefulWidget {
 }
 
 class _BottomTabsState extends State<BottomTabs> {
-  int _selectedTab = 0;
+  late int _selectedTab;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTab = this.widget.defaultSelected;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(

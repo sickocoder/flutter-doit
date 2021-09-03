@@ -1,4 +1,5 @@
 import 'package:doit/models/task.dart';
+import 'package:doit/pages/home/home.types.dart';
 import 'package:doit/pages/home/widgets/bottom-tabs.dart';
 import 'package:doit/services/db/database.dart';
 import 'package:doit/shared/widgets/button.dart';
@@ -10,7 +11,18 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 // import 'widgets/reminder-selector.dart';
 
 class AddTask extends StatefulWidget {
-  const AddTask({Key? key}) : super(key: key);
+  final bool isEdit;
+  final TaskListItem? taskItemData;
+  final Task? realTaskData;
+  final Function()? updateTheUI;
+
+  const AddTask({
+    Key? key,
+    this.isEdit = false,
+    this.taskItemData,
+    this.realTaskData,
+    this.updateTheUI,
+  }) : super(key: key);
 
   @override
   _AddTaskState createState() => _AddTaskState();
@@ -47,13 +59,61 @@ class _AddTaskState extends State<AddTask> {
     Navigator.of(context).pop();
   }
 
+  void updateTask(BuildContext context) async {
+    Task task = Task(
+      title: this.titleTextController.text,
+      time: this.selectedTime,
+      timeString: this.timeTextController.text,
+      reminderBefore: this.reminderTimes[this._selectedReminder],
+      type: this.todoTypes[this._selectedTodoType],
+    );
+
+    var realTaskData = {
+      ...{'id': this.widget.realTaskData!.id},
+      ...this.widget.realTaskData!.toMap(),
+      ...task.toMap(),
+    };
+
+    var database = await DoItDatabase().openDoItDatabase();
+    await database.updateTask(Task.fromJson(realTaskData));
+
+    this.widget.updateTheUI!();
+    Navigator.of(context).pop();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (this.widget.taskItemData != null && this.widget.realTaskData != null) {
+      // title
+      titleTextController.text = this.widget.taskItemData!.title;
+
+      // date
+      var date = DateTime.parse(this.widget.realTaskData!.time.toString());
+      String hour = date.hour < 10 ? "0${date.hour}" : date.hour.toString();
+      String minutes =
+          date.minute < 10 ? "0${date.minute}" : date.minute.toString();
+
+      this.timeTextController.text = "Hoje às $hour:$minutes";
+
+      // todo types
+      // Todo Type
+      int index = todoTypes
+          .indexWhere((element) => element == this.widget.taskItemData!.type);
+      setState(() {
+        _selectedTodoType = index;
+        this.selectedTime = date;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: this.widget.isEdit ? Colors.transparent : Colors.black,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.black,
+        backgroundColor: this.widget.isEdit ? Colors.transparent : Colors.black,
         iconTheme: IconThemeData(color: Colors.white),
         leading: IconButton(
           icon: Icon(Icons.close),
@@ -91,7 +151,6 @@ class _AddTaskState extends State<AddTask> {
                           showTitleActions: true,
                           showSecondsColumn: false,
                           onConfirm: (time) {
-                            print('confirm $time');
                             String hour = time.hour < 10
                                 ? "0${time.hour}"
                                 : time.hour.toString();
@@ -158,6 +217,7 @@ class _AddTaskState extends State<AddTask> {
                         Padding(
                           padding: const EdgeInsets.only(top: 16.0),
                           child: BottomTabs(
+                            defaultSelected: this._selectedTodoType,
                             tabsData: [
                               "Preciso Fazer",
                               "Quero Fazer",
@@ -183,9 +243,12 @@ class _AddTaskState extends State<AddTask> {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: DoItButton(
-                title: 'Nova Tarefa',
+                title: this.widget.isEdit ? 'Atualizar Tarefa' : 'Nova Tarefa',
                 onPressed: () {
-                  createTask(context);
+                  if (this.widget.isEdit)
+                    updateTask(context);
+                  else
+                    createTask(context);
                 },
               ),
             ),

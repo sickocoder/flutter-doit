@@ -81,6 +81,14 @@ class _AddTaskState extends State<AddTask> {
     Navigator.of(context).pop();
   }
 
+  void deleteTask(BuildContext context) async {
+    var database = await DoItDatabase().openDoItDatabase();
+    await database.deleteTask(this.widget.taskItemData!.id);
+
+    this.widget.updateTheUI!();
+    Navigator.of(context).pop();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -233,15 +241,16 @@ class _AddTaskState extends State<AddTask> {
                       ],
                     ),
                   ),
-                  Opacity(
-                    opacity: 0.4,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 32),
-                      child: ScalableText(
-                          'Att: Todas as tarefas serão criadas para hoje e consequentemente desaparecerão no dia imediatamente a seguir.'),
+                  if (!this.widget.isEdit)
+                    Opacity(
+                      opacity: 0.4,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 32),
+                        child: ScalableText(
+                            'Att: Todas as tarefas serão criadas para hoje e consequentemente desaparecerão no dia imediatamente a seguir.'),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -261,6 +270,21 @@ class _AddTaskState extends State<AddTask> {
                 },
               ),
             ),
+            if (this.widget.isEdit)
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  bottom: 16.0,
+                ),
+                child: DoItButton(
+                  title: 'Apagar Tarefa',
+                  type: DoItButtonType.Delete,
+                  onPressed: () {
+                    deleteTask(context);
+                  },
+                ),
+              ),
           ],
         ),
       ),

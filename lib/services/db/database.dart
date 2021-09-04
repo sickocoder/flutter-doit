@@ -64,7 +64,7 @@ class DoItDatabase {
     );
   }
 
-  Future<void> deleteDog(int id) async {
+  Future<void> deleteTask(int id) async {
     final db = database;
     if (db == null) return;
 

@@ -20,7 +20,7 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  void navigate(bool first, Object data) {
+  void navigate(bool first, Object? data) {
     Timer(
       Duration(seconds: 3),
       () => Navigator.pushReplacementNamed(
@@ -72,6 +72,7 @@ class _SplashPageState extends State<SplashPage> {
     } catch (error) {
       print(error);
       // TODO: make error page!
+      navigate(firstTime, null);
     }
   }
 

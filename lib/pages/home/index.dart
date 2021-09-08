@@ -63,7 +63,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final quote = ModalRoute.of(context)!.settings.arguments as Quote;
+    final Quote? quote = ModalRoute.of(context)!.settings.arguments as Quote;
     return Scaffold(
       backgroundColor: Colors.black,
       body: FutureBuilder(
@@ -91,9 +91,10 @@ class _HomePageState extends State<HomePage> {
                           style: AppTextStyles.appTitle,
                         ),
                       ),
-                      SliverToBoxAdapter(
-                        child: QuoteOfDay(quote: quote),
-                      ),
+                      if (quote != null)
+                        SliverToBoxAdapter(
+                          child: QuoteOfDay(quote: quote),
+                        ),
                       TaskList(
                         tasksWithFullData: snapshot.data as List<Task>,
                         tasks: (snapshot.data as List<Task>)

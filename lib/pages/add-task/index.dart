@@ -1,14 +1,18 @@
+import 'dart:io';
+
 import 'package:doit/models/task.dart';
 import 'package:doit/pages/home/home.types.dart';
 import 'package:doit/pages/home/widgets/bottom-tabs.dart';
 import 'package:doit/services/db/database.dart';
+import 'package:doit/services/notification/notification-service.dart';
 import 'package:doit/shared/widgets/button.dart';
 import 'package:doit/shared/widgets/text.dart';
 import 'package:doit/theme/text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:provider/provider.dart';
 
-// import 'widgets/reminder-selector.dart';
+import 'widgets/reminder-selector.dart';
 
 class AddTask extends StatefulWidget {
   final bool isEdit;
@@ -44,7 +48,7 @@ class _AddTaskState extends State<AddTask> {
   final timeTextController = TextEditingController();
   DateTime selectedTime = new DateTime.now();
 
-  void createTask(BuildContext context) async {
+  void createTask(BuildContext context, NotificationService model) async {
     Task task = Task(
       title: this.titleTextController.text,
       time: this.selectedTime,
@@ -55,6 +59,29 @@ class _AddTaskState extends State<AddTask> {
 
     var database = await DoItDatabase().openDoItDatabase();
     await database.insertTask(task);
+
+    try {
+      await model.scheduleNotification(
+        id: "task-reminder-pre-${this.titleTextController.text}",
+        title: "Uma tarefa se avista",
+        body:
+            "Faltam ${this.reminderTimes[this._selectedReminder]} minutos para começar a executar a tarefa: ${this.titleTextController.text}",
+        scheduledTime: this.selectedTime.subtract(
+            Duration(minutes: this.reminderTimes[this._selectedReminder])),
+      );
+
+      await model.scheduleNotification(
+        id: "task-reminder-ontime-${this.titleTextController.text}",
+        title: "Hora de começar a tarefa",
+        body:
+            "Está na hora de executar a tarefa: ${this.titleTextController.text}",
+        scheduledTime: this.selectedTime,
+      );
+
+      print('all things done!');
+    } catch (error) {
+      print(error);
+    }
 
     Navigator.of(context).pop();
   }
@@ -91,7 +118,13 @@ class _AddTaskState extends State<AddTask> {
 
   @override
   void initState() {
-    super.initState();
+    Provider.of<NotificationService>(context, listen: false).initialize();
+
+    if (Platform.isIOS) {
+      Provider.of<NotificationService>(context, listen: false)
+          .requestIOSPermissions();
+    }
+
     if (this.widget.taskItemData != null && this.widget.realTaskData != null) {
       // title
       titleTextController.text = this.widget.taskItemData!.title;
@@ -113,6 +146,8 @@ class _AddTaskState extends State<AddTask> {
         this.selectedTime = date;
       });
     }
+
+    super.initState();
   }
 
   @override
@@ -187,29 +222,30 @@ class _AddTaskState extends State<AddTask> {
                       ),
                     ),
                   ),
-                  // Padding(
-                  //   padding: const EdgeInsets.only(
-                  //       top: 32.0, left: 16.0, right: 16.0),
-                  //   child: Column(
-                  //     crossAxisAlignment: CrossAxisAlignment.start,
-                  //     children: [
-                  //       ScalableText('Reminder',
-                  //           style: AppTextStyles.formTitleText),
-                  //       Padding(
-                  //         padding: const EdgeInsets.only(top: 8.0),
-                  //         child: ReminderSelector(
-                  //           data: data,
-                  //           selectedIndex: _selectedReminder,
-                  //           onItemClicked: (index) {
-                  //             setState(() {
-                  //               this._selectedReminder = index;
-                  //             });
-                  //           },
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
+                  if (!this.widget.isEdit)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          top: 32.0, left: 16.0, right: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ScalableText('Reminder',
+                              style: AppTextStyles.formTitleText),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: ReminderSelector(
+                              data: data,
+                              selectedIndex: _selectedReminder,
+                              onItemClicked: (index) {
+                                setState(() {
+                                  this._selectedReminder = index;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   Padding(
                     padding: const EdgeInsets.only(top: 32.0),
                     child: Column(
@@ -260,14 +296,20 @@ class _AddTaskState extends State<AddTask> {
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: DoItButton(
-                title: this.widget.isEdit ? 'Atualizar Tarefa' : 'Nova Tarefa',
-                onPressed: () {
-                  if (this.widget.isEdit)
-                    updateTask(context);
-                  else
-                    createTask(context);
-                },
+              child: Consumer<NotificationService>(
+                builder: (context, model, _) => DoItButton(
+                  title:
+                      this.widget.isEdit ? 'Atualizar Tarefa' : 'Nova Tarefa',
+                  onPressed: () {
+                    if (this.widget.isEdit)
+                      updateTask(context);
+                    else {
+                      createTask(context, model);
+                      // model.instantNofitication();
+
+                    }
+                  },
+                ),
               ),
             ),
             if (this.widget.isEdit)

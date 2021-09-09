@@ -25,6 +25,8 @@ class TaskListItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final modalHeight = MediaQuery.of(context).size.height * 0.9;
+
     return AnimatedOpacity(
       duration: Duration(seconds: 3),
       opacity: element.isChecked ? 0.6 : 1,
@@ -44,13 +46,16 @@ class TaskListItemWidget extends StatelessWidget {
                 context: context,
                 enableDrag: true,
                 builder: (BuildContext context) {
-                  return AddTask(
-                    isEdit: true,
-                    realTaskData: taskData,
-                    taskItemData: element,
-                    updateTheUI: () {
-                      this.updateTheUI!();
-                    },
+                  return Container(
+                    height: modalHeight,
+                    child: AddTask(
+                      isEdit: true,
+                      realTaskData: taskData,
+                      taskItemData: element,
+                      updateTheUI: () {
+                        this.updateTheUI!();
+                      },
+                    ),
                   );
                 },
               );

@@ -65,8 +65,9 @@ class _TaskListState extends State<TaskList> {
       elements: actualElements,
       groupBy: (element) => element.hour,
       groupComparator: (value1, value2) => value2.compareTo(value1),
-      itemComparator: (item1, item2) => item1.hour.compareTo(item2.hour),
-      order: GroupedListOrder.ASC,
+      itemComparator: (item1, item2) =>
+          item1.hour.split(' ')[0].compareTo(item2.hour.split(' ')[0]),
+      order: GroupedListOrder.DESC,
       groupSeparatorBuilder: (String value) {
         bool isAllDone = actualElements
             .where((element) => element.hour == value)

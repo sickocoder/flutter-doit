@@ -64,15 +64,27 @@ class TaskListItemWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.70,
-                  child: ScalableText(
-                    element.title,
-                    style: Theme.of(context).textTheme.bodyText2?.copyWith(
-                          decoration: element.isChecked
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
-                          decorationThickness: 2.0,
+                  width: MediaQuery.of(context).size.width * 0.77,
+                  child: Row(
+                    children: [
+                      ScalableText(
+                        element.title,
+                        style: Theme.of(context).textTheme.bodyText2?.copyWith(
+                              decoration: element.isChecked
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                              decorationThickness: 2.0,
+                            ),
+                      ),
+                      Expanded(child: Container()),
+                      Opacity(
+                        opacity: 0.5,
+                        child: ScalableText(
+                          '${taskData.time.hour > 9 ? taskData.time.hour : "0${taskData.time.hour}"}:${taskData.time.minute > 9 ? taskData.time.minute : "0${taskData.time.minute}"}',
+                          style: TextStyle(fontSize: 16),
                         ),
+                      ),
+                    ],
                   ),
                 ),
                 Container(height: 4),

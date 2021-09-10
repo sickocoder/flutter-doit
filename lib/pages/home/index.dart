@@ -63,7 +63,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final Quote? quote = ModalRoute.of(context)!.settings.arguments as Quote;
+    final Quote? quote = ModalRoute.of(context)!.settings.arguments as Quote?;
     return Scaffold(
       backgroundColor: Colors.black,
       body: FutureBuilder(
@@ -81,6 +81,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Expanded(
                   child: CustomScrollView(
+                    scrollDirection: Axis.vertical,
                     slivers: <Widget>[
                       SliverAppBar(
                         centerTitle: true,

@@ -14,7 +14,7 @@ class DoItDatabase {
       version: 1,
       onCreate: (db, version) {
         return db.execute(
-          'CREATE TABLE tasks(id INTEGER PRIMARY KEY, title TEXT, timeString TEXT, reminderBefore INTEGER, type TEXT, time TEXT, done INTEGER)',
+          'CREATE TABLE tasks(id INTEGER PRIMARY KEY, title TEXT, timeString TEXT, reminderBefore INTEGER, type TEXT, time TEXT, done INTEGER, notificationIds TEXT)',
         );
       },
     );
@@ -48,6 +48,11 @@ class DoItDatabase {
         reminderBefore: maps[i]['reminderBefore'],
         type: maps[i]['type'],
         done: maps[i]['done'] == 1 ? true : false,
+        notificationIds: maps[i]["notificationIds"]
+            .toString()
+            .split(" ")
+            .map((e) => int.parse(e))
+            .toList(),
       );
     });
   }

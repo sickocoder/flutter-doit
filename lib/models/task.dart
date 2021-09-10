@@ -8,6 +8,7 @@ class Task {
   int reminderBefore;
   String type;
   bool done;
+  List<int> notificationIds;
 
   Task({
     this.id = -1,
@@ -16,6 +17,7 @@ class Task {
     required this.time,
     required this.reminderBefore,
     required this.type,
+    required this.notificationIds,
     this.done = false,
   });
 
@@ -27,6 +29,7 @@ class Task {
       'reminderBefore': reminderBefore,
       'type': type,
       'done': done ? 1 : 0,
+      'notificationIds': this.notificationIds.join(" "),
     };
   }
 
@@ -34,8 +37,7 @@ class Task {
     return TaskListItem(
       id: this.id,
       title: this.title,
-      hour:
-          "${this.time.hour <= 12 ? this.time.hour.toString() + ' am' : (this.time.hour - 12).toString() + ' pm'}",
+      hour: "${this.time.hour} horas",
       isChecked: this.done,
       type: this.type,
     );
@@ -50,6 +52,11 @@ class Task {
       title: json['title'],
       type: json['type'],
       done: json['done'] == 1,
+      notificationIds: json["notificationIds"]
+          .toString()
+          .split(" ")
+          .map((e) => int.parse(e))
+          .toList(),
     );
   }
 }

@@ -54,6 +54,7 @@ class NotificationService extends ChangeNotifier {
   }
 
   Future<void> scheduleNotification({
+    required int zonedId,
     required String id,
     required String title,
     required String body,
@@ -72,15 +73,13 @@ class NotificationService extends ChangeNotifier {
     final String currentTimeZone =
         await FlutterNativeTimezone.getLocalTimezone();
 
-    print('timezone => $currentTimeZone');
-
     final scheduledDate = tz.TZDateTime.from(
       scheduledTime,
       tz.getLocation(currentTimeZone),
     );
 
     await _flutterLocalNotificationsPlugin.zonedSchedule(
-      0,
+      zonedId,
       title,
       body,
       scheduledDate,
@@ -92,7 +91,7 @@ class NotificationService extends ChangeNotifier {
   }
 
   //Cancel notification
-  Future cancelNotification() async {
-    await _flutterLocalNotificationsPlugin.cancelAll();
+  Future cancelNotification(int id) async {
+    await _flutterLocalNotificationsPlugin.cancel(id);
   }
 }

@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:math' as math;
 
+import 'package:alert/alert.dart';
 import 'package:doit/models/task.dart';
 import 'package:doit/pages/home/home.types.dart';
 import 'package:doit/pages/home/widgets/bottom-tabs.dart';
@@ -49,19 +51,21 @@ class _AddTaskState extends State<AddTask> {
   DateTime selectedTime = new DateTime.now();
 
   void createTask(BuildContext context, NotificationService model) async {
+    int firstNotificationId = math.Random().nextInt(2000);
+    int lastNotificationId = math.Random().nextInt(2000);
+
     Task task = Task(
       title: this.titleTextController.text,
       time: this.selectedTime,
       timeString: this.timeTextController.text,
       reminderBefore: this.reminderTimes[this._selectedReminder],
       type: this.todoTypes[this._selectedTodoType],
+      notificationIds: [firstNotificationId, lastNotificationId],
     );
-
-    var database = await DoItDatabase().openDoItDatabase();
-    await database.insertTask(task);
 
     try {
       await model.scheduleNotification(
+        zonedId: math.Random().nextInt(1000),
         id: "task-reminder-pre-${this.titleTextController.text}",
         title: "Uma tarefa se avista",
         body:
@@ -71,6 +75,7 @@ class _AddTaskState extends State<AddTask> {
       );
 
       await model.scheduleNotification(
+        zonedId: math.Random().nextInt(1000),
         id: "task-reminder-ontime-${this.titleTextController.text}",
         title: "Hora de começar a tarefa",
         body:
@@ -78,12 +83,12 @@ class _AddTaskState extends State<AddTask> {
         scheduledTime: this.selectedTime,
       );
 
-      print('all things done!');
+      var database = await DoItDatabase().openDoItDatabase();
+      await database.insertTask(task);
+      Navigator.of(context).pop();
     } catch (error) {
-      print(error);
+      Alert(message: 'Ocorreu um erro ao criar a tarefa').show();
     }
-
-    Navigator.of(context).pop();
   }
 
   void updateTask(BuildContext context) async {
@@ -93,6 +98,7 @@ class _AddTaskState extends State<AddTask> {
       timeString: this.timeTextController.text,
       reminderBefore: this.reminderTimes[this._selectedReminder],
       type: this.todoTypes[this._selectedTodoType],
+      notificationIds: this.widget.realTaskData!.notificationIds,
     );
 
     var realTaskData = {
@@ -108,9 +114,18 @@ class _AddTaskState extends State<AddTask> {
     Navigator.of(context).pop();
   }
 
-  void deleteTask(BuildContext context) async {
-    var database = await DoItDatabase().openDoItDatabase();
-    await database.deleteTask(this.widget.taskItemData!.id);
+  void deleteTask(BuildContext context, NotificationService model) async {
+    try {
+      var database = await DoItDatabase().openDoItDatabase();
+      await database.deleteTask(this.widget.taskItemData!.id);
+
+      this.widget.realTaskData!.notificationIds.forEach((notificationId) async {
+        await model.cancelNotification(notificationId);
+      });
+    } catch (error) {
+      print(error);
+      Alert(message: 'Ocorreu um erro ao apagar a tarefa').show();
+    }
 
     this.widget.updateTheUI!();
     Navigator.of(context).pop();
@@ -208,7 +223,9 @@ class _AddTaskState extends State<AddTask> {
                               selectedTime = time;
                             });
                           },
-                          currentTime: DateTime.now(),
+                          currentTime: DateTime.now().add(
+                            Duration(minutes: 10),
+                          ),
                           locale: LocaleType.pt,
                         );
                       },
@@ -313,18 +330,20 @@ class _AddTaskState extends State<AddTask> {
               ),
             ),
             if (this.widget.isEdit)
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 16.0,
-                  right: 16.0,
-                  bottom: 16.0,
-                ),
-                child: DoItButton(
-                  title: 'Apagar Tarefa',
-                  type: DoItButtonType.Delete,
-                  onPressed: () {
-                    deleteTask(context);
-                  },
+              Consumer<NotificationService>(
+                builder: (context, model, _) => Padding(
+                  padding: const EdgeInsets.only(
+                    left: 16.0,
+                    right: 16.0,
+                    bottom: 16.0,
+                  ),
+                  child: DoItButton(
+                    title: 'Apagar Tarefa',
+                    type: DoItButtonType.Delete,
+                    onPressed: () {
+                      deleteTask(context, model);
+                    },
+                  ),
                 ),
               ),
           ],
